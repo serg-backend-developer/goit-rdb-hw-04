@@ -1,0 +1,182 @@
+# 1. Створіть базу даних для керування бібліотекою книг згідно
+# зі структурою, наведеною нижче. Використовуйте DDL-команди для
+# створення необхідних таблиць та їх зв'язків.
+
+# a.Назва схеми — 'LibraryManagement'
+CREATE SCHEMA LibraryManagement;
+
+# b. Таблиця 'authors':
+#   - author_id (INT, автоматично зростаючий PRIMARY KEY)
+#   - author_name (VARCHAR)
+CREATE TABLE LibraryManagement.authors (
+    author_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    author_name VARCHAR(255)
+);
+
+# c. Таблиця 'genres':
+#   - genre_id (INT, автоматично зростаючий PRIMARY KEY)
+#   - genre_name (VARCHAR)
+CREATE TABLE LibraryManagement.genres (
+    genre_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    genre_name VARCHAR(255)
+);
+
+# d. Таблиця 'books':
+#   - book_id (INT, автоматично зростаючий PRIMARY KEY)
+#   - title (VARCHAR)
+#   - publication_year (YEAR)
+#   - author_id (INT, FOREIGN KEY зв'язок з 'Authors')
+#   - genre_id (INT, FOREIGN KEY зв'язок з 'Genres')
+CREATE TABLE LibraryManagement.books (
+    book_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255),
+    publication_year YEAR,
+    author_id INT NOT NULL,
+    FOREIGN KEY (author_id)
+        REFERENCES authors (author_id),
+    genre_id INT NOT NULL,
+    FOREIGN KEY (genre_id)
+        REFERENCES genres (genre_id)
+);
+
+# e. Таблиця 'users':
+#   - user_id (INT, автоматично зростаючий PRIMARY KEY)
+#   - username (VARCHAR)
+#   - email (VARCHAR)
+CREATE TABLE LibraryManagement.users (
+    user_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255),
+    email VARCHAR(45)
+);
+
+# f. Таблиця 'borrowed_books':
+#   - borrow_id (INT, автоматично зростаючий PRIMARY KEY)
+#   - book_id (INT, FOREIGN KEY зв'язок з 'Books')
+#   - user_id (INT, FOREIGN KEY зв'язок з 'Users')
+#   - borrow_date (DATE)
+#   - return_date (DATE)
+CREATE TABLE LibraryManagement.borrowed_books (
+    borrow_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    book_id INT NOT NULL,
+    FOREIGN KEY (book_id)
+        REFERENCES books (book_id),
+    user_id INT NOT NULL,
+    FOREIGN KEY (user_id)
+        REFERENCES users (user_id),
+    borrow_date DATE,
+    return_date DATE
+);
+
+
+# 2. Заповніть таблиці простими видуманими тестовими даними. Достатньо одного-двох рядків у кожну таблицю.
+INSERT INTO LibraryManagement.authors (author_name) VALUES
+    ('author 1'),
+    ('author 2'),
+    ('author 3'),
+    ('author 4'),
+    ('author 5');
+
+INSERT INTO LibraryManagement.genres (genre_name) VALUES
+    ('genre 1'),
+    ('genre 2'),
+    ('genre 3'),
+    ('genre 4'),
+    ('genre 5');
+
+INSERT INTO LibraryManagement.books (title, publication_year, author_id, genre_id) VALUES
+    ('title 1', 2000, 1, 1),
+    ('title 2', 1915, 2, 1),
+    ('title 3', 2001, 3, 3),
+    ('title 4', 1950, 4, 2),
+    ('title 5', 1990, 5, 4);
+
+INSERT INTO LibraryManagement.users (username, email) VALUES
+    ('user 1', 'user1@gmail.com'),
+    ('user 2', 'user2@gmail.com'),
+    ('user 3', 'user3@gmail.com'),
+    ('user 4', 'user4@gmail.com'),
+    ('user 5', 'user5@gmail.com');
+
+INSERT INTO LibraryManagement.borrowed_books (book_id, user_id, borrow_date, return_date) VALUES
+    (1, 1, '2024-09-01', '2024-09-20'),
+    (2, 2, '2024-08-23', '2024-09-15'),
+    (3, 3, '2024-07-12', '2024-08-11'),
+    (4, 4, '2024-08-10', '2024-09-12'),
+    (5, 5, '2024-09-22', '2024-09-25');
+
+# 3. Перейдіть до бази даних, з якою працювали у темі 3.
+# Напишіть запит за допомогою операторів FROM та INNER JOIN, що об'єднує всі таблиці даних,
+# які ми завантажили з файлів: order_details, orders, customers, products, categories,
+# employees, shippers, suppliers. Для цього ви маєте знайти спільні ключі.
+# Перевірте правильність виконання запиту.
+
+SELECT * FROM mydb.categories
+  INNER JOIN mydb.products ON mydb.categories.id = mydb.products.category_id
+  INNER JOIN mydb.suppliers ON mydb.products.supplier_id = mydb.suppliers.id
+  INNER JOIN mydb.order_details ON mydb.products.id = mydb.order_details.product_id
+  INNER JOIN mydb.orders ON mydb.order_details.order_id = mydb.orders.id
+  INNER JOIN mydb.shippers ON mydb.orders.shipper_id = mydb.shippers.id
+  INNER JOIN mydb.customers ON mydb.orders.customer_id = mydb.customers.id
+  INNER JOIN mydb.employees ON mydb.orders.employee_id = mydb.employees.employee_id;
+
+# 4. Виконайте запити, перелічені нижче.
+# 4.1 Визначте, скільки рядків ви отримали (за допомогою оператора COUNT).
+
+SELECT COUNT(*) AS total
+FROM mydb.categories
+  INNER JOIN mydb.products ON mydb.categories.id = mydb.products.category_id
+  INNER JOIN mydb.suppliers ON mydb.products.supplier_id = mydb.suppliers.id
+  INNER JOIN mydb.order_details ON mydb.products.id = mydb.order_details.product_id
+  INNER JOIN mydb.orders ON mydb.order_details.order_id = mydb.orders.id
+  INNER JOIN mydb.shippers ON mydb.orders.shipper_id = mydb.shippers.id
+  INNER JOIN mydb.customers ON mydb.orders.customer_id = mydb.customers.id
+  INNER JOIN mydb.employees ON mydb.orders.employee_id = mydb.employees.employee_id;
+
+# 4.2 Змініть декілька операторів INNER на LEFT чи RIGHT. Визначте, що відбувається з кількістю рядків. Чому? Напишіть відповідь у текстовому файлі.
+
+SELECT count(*) FROM mydb.order_details
+INNER JOIN mydb.orders ON mydb.order_details.order_id = mydb.orders.id
+RIGHT JOIN mydb.customers ON mydb.orders.customer_id = mydb.customers.id
+LEFT JOIN mydb.products ON mydb.order_details.product_id = mydb.products.id
+LEFT JOIN mydb.categories ON mydb.products.category_id = mydb.categories.id
+LEFT JOIN mydb.employees ON mydb.orders.employee_id = mydb.employees.employee_id
+LEFT JOIN mydb.shippers ON mydb.orders.shipper_id = mydb.shippers.id
+LEFT JOIN mydb.suppliers ON mydb.products.supplier_id = mydb.suppliers.id;
+
+Коментар: рядків стало більше (535 рядків), тому що JOINs включають рядки, які не мають відповідностей в правій або лівій таблиці.
+
+# 4.3 Оберіть тільки ті рядки, де employee_id > 3 та ≤ 10.
+
+SELECT * FROM mydb.employees
+WHERE mydb.employees.employee_id > 3 AND mydb.employees.employee_id <= 10;
+
+# 4.4 Згрупуйте за іменем категорії, порахуйте кількість рядків у групі,
+# середню кількість товару (кількість товару знаходиться в order_details.quantity)
+
+SELECT
+	COUNT(mydb.order_details.order_id) AS total,
+	AVG(mydb.order_details.quantity) AS avg_quantity
+FROM mydb.order_details
+GROUP BY mydb.order_details.order_id;
+
+# 4.5 Відфільтруйте рядки, де середня кількість товару більша за 21.
+SELECT mydb.order_details.order_id, AVG(mydb.order_details.quantity) AS avg_quantity
+FROM mydb.order_details
+GROUP BY mydb.order_details.order_id
+HAVING AVG(mydb.order_details.quantity) > 21;
+
+# 4.6 Відсортуйте рядки за спаданням кількості рядків.
+SELECT mydb.order_details.order_id, AVG(mydb.order_details.quantity) AS avg_quantity
+FROM mydb.order_details
+GROUP BY mydb.order_details.order_id
+HAVING AVG(mydb.order_details.quantity) > 21
+ORDER BY mydb.order_details.order_id DESC;
+
+#4.7 Виведіть на екран (оберіть) чотири рядки з пропущеним першим рядком.
+SELECT
+	mydb.order_details.order_id,
+    AVG(mydb.order_details.quantity) AS avg_quantity
+FROM mydb.order_details
+GROUP BY mydb.order_details.order_id
+HAVING AVG(mydb.order_details.quantity) > 21
+ORDER BY mydb.order_details.order_id DESC LIMIT 4 OFFSET 1;
